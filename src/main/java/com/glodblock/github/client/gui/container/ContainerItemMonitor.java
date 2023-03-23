@@ -19,7 +19,6 @@ import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.energy.IEnergySource;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.storage.IBaseMonitor;
-import appeng.api.networking.storage.IStorageGrid;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
