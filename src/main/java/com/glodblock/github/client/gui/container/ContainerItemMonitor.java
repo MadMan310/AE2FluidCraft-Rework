@@ -55,7 +55,6 @@ public class ContainerItemMonitor extends FCContainerMonitor<IAEItemStack> {
                             this.setValidContainer(false);
                         } else {
                             this.monitor.addListener(this, null);
-                            this.setCellInventory(this.monitor);
                         }
                     }
                 } else {
