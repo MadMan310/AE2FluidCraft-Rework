@@ -25,16 +25,13 @@ public class GuiFluidMonitor extends FCGuiMonitor<IAEFluidStack> {
         this.repo = new FluidRepo(getScrollBar(), this);
     }
 
-    @Override
-    public void postUpdate(final List<IAEFluidStack> list, boolean resort) {
+    public void postUpdate(final List<IAEFluidStack> list) {
         for (final IAEFluidStack is : list) {
             IAEItemStack stack = AEItemStack.create(ItemFluidDrop.newDisplayStack(is.getFluidStack()));
             stack.setStackSize(is.getStackSize());
             this.repo.postUpdate(stack);
         }
-        if (resort) {
-            this.repo.updateView();
-        }
+        this.repo.updateView();
         this.setScrollBar();
     }
 
