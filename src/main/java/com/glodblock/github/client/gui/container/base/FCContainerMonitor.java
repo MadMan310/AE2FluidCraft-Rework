@@ -117,7 +117,7 @@ public abstract class FCContainerMonitor<T extends IAEStack<T>> extends FCBaseCo
     protected abstract void processItemList();
 
     protected boolean isInvalid() {
-        return this.monitor == null;
+        return this.monitor != this.host.getItemInventory();
     }
 
     protected void updatePowerStatus() {

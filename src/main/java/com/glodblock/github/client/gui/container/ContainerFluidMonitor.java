@@ -18,6 +18,8 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
+import appeng.api.implementations.guiobjects.IPortableCell;
+import appeng.api.implementations.tiles.IMEChest;
 import appeng.api.implementations.tiles.IViewCellStorage;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridHost;
@@ -26,7 +28,6 @@ import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.energy.IEnergySource;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.storage.IBaseMonitor;
-import appeng.api.networking.storage.IStorageGrid;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IItemList;
@@ -41,6 +42,7 @@ import appeng.util.item.AEItemStack;
 import com.glodblock.github.FluidCraft;
 import com.glodblock.github.client.gui.container.base.FCContainerMonitor;
 import com.glodblock.github.common.item.ItemFluidDrop;
+import com.glodblock.github.inventory.item.IFluidPortableCell;
 import com.glodblock.github.network.CPacketFluidUpdate;
 import com.glodblock.github.network.SPacketFluidUpdate;
 import com.glodblock.github.network.SPacketMEInventoryUpdate;
@@ -59,28 +61,27 @@ public class ContainerFluidMonitor extends FCContainerMonitor<IAEFluidStack> {
         super(ip, monitorable, bindInventory);
         if (Platform.isServer()) {
             this.serverCM = monitorable.getConfigManager();
-            if (monitorable instanceof IGridHost) {
-                final IGridNode node = ((IGridHost) monitorable).getGridNode(ForgeDirection.UNKNOWN);
-                if (node != null) {
-                    this.networkNode = node;
-                    final IGrid g = node.getGrid();
-                    if (g != null) {
-                        this.setPowerSource(new ChannelPowerSrc(this.networkNode, g.getCache(IEnergyGrid.class)));
-                        IStorageGrid storageGrid = g.getCache(IStorageGrid.class);
-                        this.monitor = storageGrid.getFluidInventory();
-                        if (this.monitor == null) {
-                            this.setValidContainer(false);
-                        } else {
-                            this.monitor.addListener(this, null);
+            this.monitor = monitorable.getFluidInventory();
+            if (this.monitor != null) {
+                this.monitor.addListener(this, null);
+                if (monitorable instanceof IFluidPortableCell) {
+                    this.setPowerSource((IEnergySource) monitorable);
+                } else if (monitorable instanceof IPortableCell) {
+                    this.setPowerSource((IEnergySource) monitorable);
+                } else if (monitorable instanceof IMEChest) {
+                    this.setPowerSource((IEnergySource) monitorable);
+                } else if (monitorable instanceof IGridHost) {
+                    final IGridNode node = ((IGridHost) monitorable).getGridNode(ForgeDirection.UNKNOWN);
+                    if (node != null) {
+                        this.networkNode = node;
+                        final IGrid g = node.getGrid();
+                        if (g != null) {
+                            this.setPowerSource(new ChannelPowerSrc(this.networkNode, g.getCache(IEnergyGrid.class)));
                         }
                     }
-                } else {
-                    this.setValidContainer(false);
                 }
             } else {
-                this.monitor = monitorable.getFluidInventory();
-                this.monitor.addListener(this, null);
-                this.setPowerSource((IEnergySource) monitorable);
+                this.setValidContainer(false);
             }
         } else {
             this.monitor = null;
@@ -148,6 +149,11 @@ public class ContainerFluidMonitor extends FCContainerMonitor<IAEFluidStack> {
                 }
             }
         }
+    }
+
+    @Override
+    protected boolean isInvalid() {
+        return this.monitor != this.host.getFluidInventory();
     }
 
     @Override

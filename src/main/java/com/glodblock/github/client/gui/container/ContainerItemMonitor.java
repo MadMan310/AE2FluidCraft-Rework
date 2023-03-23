@@ -9,6 +9,8 @@ import net.minecraft.inventory.ICrafting;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import appeng.api.AEApi;
+import appeng.api.implementations.guiobjects.IPortableCell;
+import appeng.api.implementations.tiles.IMEChest;
 import appeng.api.implementations.tiles.IViewCellStorage;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridHost;
@@ -42,30 +44,26 @@ public class ContainerItemMonitor extends FCContainerMonitor<IAEItemStack> {
         super(ip, monitorable, bindInventory);
         if (Platform.isServer()) {
             this.serverCM = monitorable.getConfigManager();
-            if (monitorable instanceof IGridHost) {
-                final IGridNode node = ((IGridHost) monitorable).getGridNode(ForgeDirection.UNKNOWN);
-                if (node != null) {
-                    this.networkNode = node;
-                    final IGrid g = node.getGrid();
-                    if (g != null) {
-                        this.setPowerSource(new ChannelPowerSrc(this.networkNode, g.getCache(IEnergyGrid.class)));
-                        IStorageGrid storageGrid = g.getCache(IStorageGrid.class);
-                        this.monitor = storageGrid.getItemInventory();
-                        if (this.monitor == null) {
-                            this.setValidContainer(false);
-                        } else {
-                            this.monitor.addListener(this, null);
-                            this.setCellInventory(this.monitor);
-                        }
-                    }
-                } else {
-                    this.setValidContainer(false);
-                }
-            } else {
-                this.monitor = monitorable.getItemInventory();
+            this.monitor = monitorable.getItemInventory();
+            if (this.monitor != null) {
                 this.monitor.addListener(this, null);
                 this.setCellInventory(this.monitor);
-                this.setPowerSource((IEnergySource) monitorable);
+                if (monitorable instanceof IPortableCell) {
+                    this.setPowerSource((IEnergySource) monitorable);
+                } else if (monitorable instanceof IMEChest) {
+                    this.setPowerSource((IEnergySource) monitorable);
+                } else if (monitorable instanceof IGridHost) {
+                    final IGridNode node = ((IGridHost) monitorable).getGridNode(ForgeDirection.UNKNOWN);
+                    if (node != null) {
+                        this.networkNode = node;
+                        final IGrid g = node.getGrid();
+                        if (g != null) {
+                            this.setPowerSource(new ChannelPowerSrc(this.networkNode, g.getCache(IEnergyGrid.class)));
+                        }
+                    }
+                }
+            } else {
+                this.setValidContainer(false);
             }
         } else {
             this.monitor = null;
